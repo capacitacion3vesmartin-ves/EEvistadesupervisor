@@ -32,6 +32,8 @@ input:focus,select:focus{outline:2px solid var(--g);border-color:var(--g)}
 .btn{border:1px solid var(--ln);background:#fff;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}.btn.pr{background:var(--g);border-color:var(--g);color:#fff}
 h3{font-size:16px;color:var(--nv);margin-bottom:8px}
 .mu{color:var(--mu);font-weight:600;font-size:13px}.msg{color:var(--mu);padding:24px 0;text-align:center}
+.nc .r>span:first-child{min-width:0}.rd{display:block;color:var(--mu);font-size:11px;font-weight:600;margin-top:1px}.ra{display:flex;align-items:center;gap:8px;flex:none}.btn.sm{padding:4px 10px;font-size:12px}.nfl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.vxd .av{width:44px;height:44px;font-size:16px;border:0}.vh{display:flex;align-items:center;gap:12px;margin-bottom:14px}.vs{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase}.vn{font-size:17px;font-weight:800;color:var(--ink)}.vx{border:1px solid var(--ln);background:#fff;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;flex:none}.vcard{display:flex;align-items:center;gap:18px;background:#eaf6ee;border:1px solid #c9e6d2;border-radius:12px;padding:12px 16px;margin-bottom:14px}.vl{font-size:10px;font-weight:800;color:var(--gd)}.vbig{font-size:34px;font-weight:800;line-height:1.1}.vm{font-size:12px;font-weight:600;color:var(--ink)}.vt{font-weight:800;margin:6px 0 8px}.vc{background:#e7f4ec;border-radius:10px;padding:1px 9px;font-size:12px;color:var(--gd);margin-left:4px}.vit{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin-bottom:10px}.vi1{font-weight:800;font-size:14px}.hxb{background:#e7f4ec;color:var(--gd);border-radius:10px;padding:2px 9px;font-size:10px;font-weight:800;margin-left:8px}.vi2{font-size:12px;color:var(--mu);font-weight:600;text-transform:uppercase}.vact{display:flex;align-items:center;gap:10px;flex:none}.vnn{font-weight:800;color:var(--c);background:#f0f4ef;border-radius:8px;padding:6px 12px}
+.vxo{position:fixed;inset:0;background:#0009;z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}.vxo .vxd{background:#fff;border-radius:12px;padding:14px;max-width:900px;width:100%;max-height:92vh;overflow:auto}.vxo .vxd img{max-width:100%;border-radius:8px;border:1px solid var(--ln);display:block;margin:10px auto}
 .tw{overflow-x:auto}table{width:100%;border-collapse:collapse}
 th{font-size:12px;font-weight:700;color:#fff;text-align:left;padding:9px 10px;background:#23272b;white-space:nowrap}
 td{padding:9px 10px;border-bottom:1px solid var(--ln);vertical-align:middle;font-size:14px}
@@ -396,14 +398,27 @@ function detalle(a){
   const pun=`<div class="card pu" style="margin-top:14px"><h3>Puntualidad <span class="mu">· ${mes} · <b class="nm">${esc(a.nombre)}</b></span></h3>${qn?`<div class="pu-big"><b>${Math.round(qt.P*100/qn)}%</b><span>llegó puntual</span></div><div class="pu-bar">${seg.map(k=>`<i style="width:${qt[k]*100/qn}%;background:${CL[k]}" title="${NM[k]}: ${qt[k]}"></i>`).join('')}</div><div class="pu-lg">${seg.map(k=>`<span><i style="background:${CL[k]}"></i>${qt[k]} ${NM[k].toLowerCase()}</span>`).join('')}</div>${fm.T.length||fm.F.length?`<div class="pu-ls" style="max-height:none">${fm.T.length?`<div class="pd"><span class="pt T">${fm.T.length} tarde</span> ${fm.T.join(' · ')}</div>`:''}${fm.F.length?`<div class="pd"><span class="pt F">${fm.F.length} faltó</span> ${fm.F.join(' · ')}</div>`:''}</div>`:''}`:'<div class="msg">Sin asistencias registradas en este mes.</div>'}</div>`;
   /* notas: solo temas asignados y ya calificados */
   const grafico=`<div class="card" style="margin:0"><h3>Avance de notas por tema <span class="mu">· ${esc(shortN(a.nombre))}</span></h3>${cal.length?lineSvg({cats:cal.map(t=>t.titulo),series:[{n:a.nombre,c:AC(a.area),vals:cal.map(t=>+nt(t,a.id)),w:3.5,lab:true}],ymax:21,ticks:[0,5,10,15,20],ref:APR,refl:'Aprobatoria '+APR,aria:'Notas por tema de '+a.nombre})+'<div class="hint np">Solo cuentan las evaluaciones ya calificadas. Toca un punto para ver su nota.</div>':'<div class="msg">Aún no hay evaluaciones calificadas.</div>'}</div>`;
-  const notas=`<div class="card" style="margin:0"><h3>Notas por tema</h3>${cal.length?`<div class="nc"><h5><span>${esc(a.nombre)}</span><span>Prom. ${f1(p)}</span></h5>${cal.map(t=>`<div class="r"><span>${esc(t.titulo)}</span>${pill(nt(t,a.id))}</div>`).join('')}</div>`:'<div class="msg">Aún no hay evaluaciones calificadas. Las notas irán apareciendo conforme se califiquen.</div>'}</div>`;
+  /* notas por tema + exámenes rendidos: del más reciente al más antiguo, con botón "Ver examen" */
+  const fh=s=>{const m=String(s||'').match(/^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d:\d\d))?/);if(!m)return String(s||'');return dsh(m[1]+'-'+m[2]+'-'+m[3])+'/'+m[1]+(m[4]?' · '+m[4]:'')};
+  const att=k=>(((D.fotos||{})[k]||{})[a.id]||[]).filter(r=>r.u).slice().sort((x,y)=>String(y.f).localeCompare(String(x.f)));
+  const filas=[],yaT=new Set(cal.map(t=>t.id));
+  cal.forEach(t=>filas.push({k:t.id,t:t.titulo,n:nt(t,a.id),d:att(t.id)[0]?att(t.id)[0].f:fexa(t,a.id)}));
+  new Set([...Object.keys(D.fotos||{}).filter(k=>att(k).length),...(D.examenes||[]).filter(x=>has((D.notas[x.id]||{})[a.id])).map(x=>x.id)]).forEach(k=>{
+    if(yaT.has(k))return;const ex=(D.examenes||[]).find(x=>x.id===k),tm=D.temas.find(t=>t.id===k);
+    filas.push({k:k,t:ex?ex.titulo:(tm?tm.titulo:'Examen'),n:(D.notas[k]||{})[a.id],d:att(k)[0]?att(k)[0].f:(ex?ex.f:'')})});
+  window.VEX=[];
+  let vf=filas.filter(r=>!S.nf||att(r.k).length);
+  vf.sort((x,y)=>S.no==='ant'?String(x.d||'9').localeCompare(String(y.d||'9')):String(y.d||'').localeCompare(String(x.d||'')));
+  const hayEx=filas.some(r=>att(r.k).length);
+  const notas=`<div class="card" style="margin:0"><h3>Notas por tema</h3>${filas.length?`${hayEx?`<div class="nfl np"><button type="button" class="btn sm${S.nf?' pr':''}" data-nf="1">Solo con examen</button><button type="button" class="btn sm" data-no="1">${S.no==='ant'?'Más antiguos primero ↑':'Más recientes primero ↓'}</button></div>`:''}<div class="nc"><h5><span>${esc(a.nombre)}</span><span>Prom. ${f1(p)}</span></h5>${vf.length?vf.map(r=>{const at=att(r.k);let b='';if(at.length){VEX.push({t:r.t,nom:a.nombre,av:avs(a,100),cur:r.n,sub:(()=>{const ex=(D.examenes||[]).find(x=>x.id===r.k),g=ex&&ex.g?D.grupos.find(z=>z.id===ex.g):null;return ex?(g?g.nombre:'Todos los grupos'):'Tema'})(),it:at});b=`<button type="button" class="btn pr sm" data-vex="${VEX.length-1}">Ver examen</button>`}
+    return `<div class="r"><span>${esc(r.t)}${r.d?`<small class="rd">${esc(fh(r.d))}</small>`:''}</span><span class="ra">${b}${pill(r.n)}</span></div>`}).join(''):'<div class="msg">Ninguna nota tiene examen para ver.</div>'}</div>`:'<div class="msg">Aún no hay evaluaciones calificadas. Las notas irán apareciendo conforme se califiquen.</div>'}</div>`;
   return `<div class="bar np"><button class="btn az" data-a="">← Volver al listado</button><button class="btn" data-img="${esc(a.nombre)}">Descargar reporte</button>
   <div class="qw"><label class="wq">Buscar asesor<input id="qa" type="search" autocomplete="off" placeholder="Nombre o DNI"></label><div id="qr" class="qr" hidden></div></div>
   <label>Mes<input type="month" data-f="mes" value="${S.mes}"></label></div>
   <div class="rb"><span class="av">${esc(ini)}${img?`<img src="${esc(img)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</span><div><h3>${esc(a.nombre)}</h3><div class="mu">DNI ${esc(a.dni)} · ${ap(a.area)} · ${esc(a.sede)}</div></div></div>
   <div class="tiles">${tile('Promedio',f1(p),p===null?'':'var(--'+cl(p)+')')}${tile('Notas',cal.length+'/'+ts.length)}${tile('Puntual',s.P,'var(--P)')}<div data-pd="T" style="--c:var(--T);cursor:pointer;${S.pd==='T'?'box-shadow:0 0 0 2px var(--T)':''}" title="Ver fechas"><b>${s.T}</b><small>Tarde ▾</small></div><div data-pd="F" style="--c:var(--F);cursor:pointer;${S.pd==='F'?'box-shadow:0 0 0 2px var(--F)':''}" title="Ver fechas"><b>${s.F}</b><small>Faltó ▾</small></div>${tile('Puntos',saldo(a.id))}</div>
   ${S.pd&&fe[S.pd]?`<div class="card np-keep" style="margin-top:-4px"><h3>${S.pd==='T'?'Tardanzas':'Faltas'} <span class="mu">· ${fe[S.pd].length}</span></h3>${fe[S.pd].length?`<div>${fe[S.pd].join(' · ')}</div>`:'<div class="mu">Ninguna.</div>'}</div>`:''}
-  <div class="two" style="grid-template-columns:minmax(0,2fr) minmax(280px,1fr)">${grafico}${notas}</div>${pun}`}
+  <div class="two" style="grid-template-columns:minmax(0,1.4fr) minmax(360px,1fr)">${grafico}${notas}</div>${pun}`}
 const pm=m=>{const d=new Date(+m.slice(0,4),+m.slice(5)-2,1);return d.getFullYear()+'-'+p2(d.getMonth()+1)},ml=m=>MS[+m.slice(5)-1]+' '+m.slice(0,4),ms3=m=>MS[+m.slice(5)-1].slice(0,3)+' '+m.slice(2,4);
 /* cálculo mensual (misma lógica que Estadística por área: asesores con temas del mes, solo evaluaciones ya tomadas) */
 function stMes(ym,pred){
@@ -502,6 +517,27 @@ async function bajarImg(btn){const nm=(btn.dataset.img||'reporte').replace(/[\\\
   }catch(err){alert('No se pudo generar la imagen. Revisa tu conexión a internet e inténtalo de nuevo.')}
   btn.disabled=false;btn.textContent=tx}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-img]');if(b)bajarImg(b)});
+/* ventana con el historial de intentos (solo lectura) + foto del examen, y filtros de la lista de notas */
+document.addEventListener('click',e=>{
+  const f1b=e.target.closest('[data-nf]');if(f1b){S.nf=S.nf?'':'1';return R()}
+  const f2b=e.target.closest('[data-no]');if(f2b){S.no=S.no==='ant'?'':'ant';return R()}
+  const b=e.target.closest('[data-vex]');if(!b)return;const v=(window.VEX||[])[+b.dataset.vex];if(!v)return;
+  const src=u=>{const m=String(u).match(/drive\.google\.com\/file\/d\/([^\/?#]+)/);return m?'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600':u};
+  const fx=s=>{const m=String(s||'').match(/^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d:\d\d))?/);if(!m)return String(s||'');return new Date(+m[1],m[2]-1,+m[3]).toLocaleDateString('es-PE',{day:'numeric',month:'short',year:'numeric'}).replace(/\./g,'')+(m[4]?' · '+m[4]:'')};
+  const rec=v.it.find(x=>has(x.n)),nota=has(v.cur)?+v.cur:(rec?+rec.n:null),col=nota===null?'var(--mu)':'var(--'+cl(nota)+')';
+  const o=document.createElement('div');o.className='vxo';
+  o.innerHTML='<div class="vxd" style="max-width:520px"><div class="vh">'+v.av+'<div style="min-width:0;flex:1"><div class="vs">'+esc(v.sub)+'</div><div class="vn">'+esc(v.nom)+'</div></div><button type="button" class="vx" data-vxc aria-label="Cerrar">×</button></div>'
+   +'<div class="vcard"><div><div class="vl">NOTA MÁS RECIENTE</div><div class="vbig" style="color:'+col+'">'+(nota===null?'—':+nota.toFixed(1))+'</div></div><div class="vm">'+(v.it[0]?esc(fx(v.it[0].f))+'<br>':'')+esc(v.t)+'</div></div>'
+   +'<div class="vt">Historial <span class="vc">'+v.it.length+'</span></div>'
+   +v.it.map((r,j)=>'<div class="vit"><div><div class="vi1">'+esc(fx(r.f))+(j===0?'<span class="hxb">ÚLTIMO EXAMEN</span>':'')+'</div><div class="vi2">'+esc(v.t)+'</div></div><div class="vact">'+(has(r.n)?'<span class="vnn" style="--c:var(--'+cl(+r.n)+')">'+(+(+r.n).toFixed(1))+'</span>':'')+'<button type="button" class="btn pr" data-vi="'+j+'">Ver examen</button></div></div>').join('')+'</div>';
+  o.addEventListener('click',ev=>{
+    const vi=ev.target.closest('[data-vi]');
+    if(vi){const r=v.it[+vi.dataset.vi],p=document.createElement('div');p.className='vxo';p.style.zIndex=95;
+      p.innerHTML='<div class="vxd"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b>'+esc(v.nom+' · '+v.t)+'</b><button type="button" class="vx" data-vxc aria-label="Cerrar">×</button></div><div class="mu" style="margin-top:4px">'+esc(fx(r.f))+'</div><img referrerpolicy="no-referrer" alt="Examen" src="'+esc(src(r.u))+'"><div class="mu" hidden style="text-align:center">No se pudo mostrar la foto del examen.</div></div>';
+      p.querySelector('img').onerror=function(){this.hidden=true;p.querySelector('.mu[hidden]').hidden=false};
+      p.addEventListener('click',e2=>{if(e2.target===p||e2.target.closest('[data-vxc]'))p.remove()});document.body.appendChild(p);return}
+    if(ev.target===o||ev.target.closest('[data-vxc]'))o.remove()});
+  document.body.appendChild(o)});
 document.addEventListener('change',e=>{const f=e.target.dataset.f;if(!f)return;S[f]=e.target.value;if(f==='mes'||f==='sede')S.g='';R()});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;S._f=1;document.activeElement.blur();R()}});
 document.addEventListener('click',e=>{const dv=e.target.closest('[data-dv],[data-dm]');if(dv){if(dv.dataset.dv)S.dbv=dv.dataset.dv;if(dv.dataset.dm)S.dbm=dv.dataset.dm;return R()}});
